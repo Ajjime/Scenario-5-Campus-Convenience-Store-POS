@@ -1,2 +1,111 @@
 /* This one line loads all of Tailwind's utility classes */
 @import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Design tokens. Anything in @theme becomes a Tailwind class:
+   --color-brand-700  ->  bg-brand-700, text-brand-700, border-brand-700 ...
+   --animate-shake    ->  animate-shake
+   ------------------------------------------------------------------ */
+@theme {
+  /* Font used everywhere (loaded in index.html) */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* CampusMart brand green-teal. 700 is dark enough for white text (6:1 contrast). */
+  --color-brand-50: #effcf8;
+  --color-brand-100: #d7f7ec;
+  --color-brand-200: #b0eedb;
+  --color-brand-300: #7ae0c5;
+  --color-brand-400: #3fc9a8;
+  --color-brand-500: #16ad8d;
+  --color-brand-600: #0b8c73;
+  --color-brand-700: #0b705e;
+  --color-brand-800: #0d594c;
+  --color-brand-900: #0c4a40;
+
+  /* Animations: name, length, easing. Entering = ease-out, leaving = shorter + ease-in. */
+  --animate-slide-in: slide-in 250ms ease-out;
+  --animate-fade-out: fade-out 180ms ease-in forwards;
+  --animate-pop: pop 300ms ease-out;
+  --animate-flash: flash 700ms ease-out;
+  --animate-shake: shake 350ms ease-in-out;
+  --animate-toast-in: toast-in 250ms ease-out;
+  --animate-scale-in: scale-in 300ms ease-out;
+  --animate-draw: draw 400ms ease-out 200ms both;
+  --animate-slide-up: slide-up 450ms ease-out 250ms both;
+
+  /* New cart row slides in from the left */
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: none; }
+  }
+  /* Removed cart row fades out to the right */
+  @keyframes fade-out {
+    to { opacity: 0; transform: translateX(12px); }
+  }
+  /* Cart count badge grows and settles back */
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+  /* Total gets a short amber glow */
+  @keyframes flash {
+    from { background-color: #fde68a; } /* amber-200 */
+    to { background-color: transparent; }
+  }
+  /* Error message wiggles left and right */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+  }
+  /* Success toast drops in from above */
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: none; }
+  }
+  /* Confirmation panel / checkmark circle grows in */
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: none; }
+  }
+  /* Checkmark line "draws" itself (see stroke-dasharray in PaymentConfirmation) */
+  @keyframes draw {
+    from { stroke-dashoffset: 24; }
+    to { stroke-dashoffset: 0; }
+  }
+  /* Receipt slides up after the confirmation appears */
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* Clear keyboard focus ring on every button, input, and link.
+   :focus-visible only shows it for keyboard users, not mouse clicks. */
+:focus-visible {
+  outline: 3px solid #16ad8d; /* brand-500 */
+  outline-offset: 2px;
+}
+
+/* Paper receipt with a torn (zig-zag) bottom edge.
+   The mask hides two small triangles at the bottom of every 16px-wide strip. */
+.receipt-paper {
+  background-color: #fffdf6;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 16px 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 16px 100%;
+}
+
+/* Respect the "reduce motion" setting in the operating system:
+   animations and transitions finish instantly instead of moving. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

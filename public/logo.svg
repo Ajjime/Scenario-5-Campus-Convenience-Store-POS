@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="cm-title">
+  <!-- CampusMart logo mark: a shop awning (convenience store) over a shopping bag
+       wearing a graduation cap (campus). Original artwork for this project. -->
+  <title id="cm-title">CampusMart</title>
+  <defs>
+    <linearGradient id="cm-tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16ad8d" />
+      <stop offset="1" stop-color="#0b594c" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded tile background -->
+  <rect width="64" height="64" rx="16" fill="url(#cm-tile)" />
+
+  <!-- Awning rod -->
+  <rect x="8" y="9" width="48" height="3.5" rx="1.75" fill="#ffffff" />
+
+  <!-- Awning stripes (white / amber) with scalloped bottom edge -->
+  <rect x="10" y="12" width="11" height="8" fill="#ffffff" />
+  <rect x="21" y="12" width="11" height="8" fill="#fbbf24" />
+  <rect x="32" y="12" width="11" height="8" fill="#ffffff" />
+  <rect x="43" y="12" width="11" height="8" fill="#fbbf24" />
+  <circle cx="15.5" cy="20" r="5.5" fill="#ffffff" />
+  <circle cx="26.5" cy="20" r="5.5" fill="#fbbf24" />
+  <circle cx="37.5" cy="20" r="5.5" fill="#ffffff" />
+  <circle cx="48.5" cy="20" r="5.5" fill="#fbbf24" />
+
+  <!-- Shopping bag: wide thin handle + slightly tapered body (so it reads as a tote bag) -->
+  <path d="M24.5 37c0-7.5 15-7.5 15 0" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" />
+  <path d="M19 36h26l-2 18.5a2 2 0 0 1-2 1.5H23a2 2 0 0 1-2-1.5Z" fill="#ffffff" />
+
+  <!-- Graduation cap on the bag -->
+  <polygon points="32,40 41,44 32,48 23,44" fill="#0b705e" />
+  <path d="M27.5 46v3.2c0 1 2 2 4.5 2s4.5-1 4.5-2V46l-4.5 2Z" fill="#0b705e" />
+  <path d="M39 45v4.5" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round" />
+</svg>

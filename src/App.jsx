@@ -12,13 +12,14 @@ import { createTransactionNumber, formatDateTime } from './utils/transaction'
 
 // Hard-coded store items. Prices are plain numbers (in pesos) so we can do math with them.
 // "category" isn't shown on the cards yet; we'll use it for the category buttons later.
+// "image" is a photo in public/images/; "emoji" is shown instead if the photo fails to load.
 const products = [
-  { id: 1, name: 'Instant Noodles', price: 18, category: 'Snacks' },
-  { id: 2, name: 'Potato Chips', price: 25, category: 'Snacks' },
-  { id: 3, name: 'Soft Drink (Can)', price: 25, category: 'Drinks' },
-  { id: 4, name: 'Bottled Water', price: 20, category: 'Drinks' },
-  { id: 5, name: 'Ballpen (piece)', price: 12, category: 'School Supplies' },
-  { id: 6, name: 'Notebook (piece)', price: 35, category: 'School Supplies' },
+  { id: 1, name: 'Instant Noodles', price: 18, category: 'Snacks', image: '/images/instant-noodles.jpg', emoji: '🍜' },
+  { id: 2, name: 'Potato Chips', price: 25, category: 'Snacks', image: '/images/potato-chips.jpg', emoji: '🥔' },
+  { id: 3, name: 'Soft Drink (Can)', price: 25, category: 'Drinks', image: '/images/soft-drink.jpg', emoji: '🥤' },
+  { id: 4, name: 'Bottled Water', price: 20, category: 'Drinks', image: '/images/bottled-water.jpg', emoji: '💧' },
+  { id: 5, name: 'Ballpen (piece)', price: 12, category: 'School Supplies', image: '/images/ballpen.jpg', emoji: '🖊️' },
+  { id: 6, name: 'Notebook (piece)', price: 35, category: 'School Supplies', image: '/images/notebook.jpg', emoji: '📓' },
 ]
 
 function App() {
@@ -116,27 +117,69 @@ function App() {
     setPaymentFormKey(paymentFormKey + 1) // new key = brand-new PaymentForm with empty input and no errors
   }
 
+  // Number of pieces in the cart (2 noodles + 1 water = 3). Only used for the header badge.
+  const itemCount = cart.reduce((count, item) => count + item.quantity, 0)
+
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
-      {/* Top bar with the store name */}
-      <header className="bg-slate-900 px-8 py-4 text-white">
-        <h1 className="text-xl font-bold">Campus Convenience Store POS</h1>
-        <p className="text-sm text-slate-300">Cashier: Name · Register 1</p>
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-slate-100 to-brand-50 font-sans text-slate-900 antialiased">
+      {/* Top bar: logo + store name on the left, register info and cart count on the right */}
+      <header className="bg-linear-to-r from-brand-900 via-brand-800 to-brand-700 text-white shadow-md">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            {/* alt="" because the store name is written right next to the logo */}
+            <img src="/logo.svg" alt="" width="44" height="44" className="h-11 w-11 drop-shadow" />
+            <div>
+              <h1 className="text-xl font-extrabold tracking-tight">
+                Campus<span className="text-amber-300">Mart</span>
+              </h1>
+              <p className="text-xs font-medium text-brand-100">Campus Convenience Store · Point of Sale</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            <span className="hidden rounded-full bg-white/10 px-3 py-1.5 text-brand-50 sm:inline">Register 1</span>
+            <span className="hidden rounded-full bg-white/10 px-3 py-1.5 text-brand-50 sm:inline">Cashier: Name</span>
+
+            {/* Cart count. key={itemCount} re-creates the badge when the number changes,
+                which replays the "pop" animation. */}
+            <span className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 font-semibold text-brand-800">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M6 7h12l-1 13H7L6 7Z" strokeLinejoin="round" />
+                <path d="M9 7V6a3 3 0 0 1 6 0v1" strokeLinecap="round" />
+              </svg>
+              Cart
+              <span
+                key={itemCount}
+                className="inline-flex min-w-6 animate-pop items-center justify-center rounded-full bg-amber-400 px-1.5 text-xs font-bold tabular-nums text-slate-900"
+              >
+                {itemCount}
+              </span>
+              <span className="sr-only">items</span>
+            </span>
+          </div>
+        </div>
       </header>
 
-      {/* Success message in the top-right corner. role="status" makes screen readers announce it. */}
-      <div role="status" className="fixed right-6 top-6 z-10">
+      {/* Success message under the header. role="status" makes screen readers announce it.
+          key={message} replays the slide-in animation for each new message. */}
+      <div role="status" className="pointer-events-none fixed right-4 top-24 z-20 sm:right-6">
         {message && (
-          <p className="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white shadow-lg">
+          <p
+            key={message}
+            className="flex animate-toast-in items-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-xl"
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-xs" aria-hidden="true">
+              ✓
+            </span>
             {message}
           </p>
         )}
       </div>
 
-      {/* 12-column grid. The left side takes 7 columns, checkout takes 5 */}
-      <main className="mx-auto grid max-w-7xl grid-cols-12 gap-6 p-8">
+      {/* One column on small screens; from 1024px wide (lg), a 12-column grid: 7 left, 5 right */}
+      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-12 lg:px-8 lg:py-8">
         {/* Left side: products while selling; after payment, the confirmation then the receipt */}
-        <div className="col-span-7">
+        <div className="lg:col-span-7">
           {isLocked ? (
             <div className="space-y-6">
               <PaymentConfirmation sale={completedSale} onNewTransaction={startNewTransaction} />
@@ -148,7 +191,7 @@ function App() {
         </div>
 
         {/* Checkout column: cart, totals, then payment, stacked top to bottom */}
-        <div className="col-span-5 space-y-6">
+        <div className="space-y-6 lg:col-span-5">
           <Cart
             cart={cart}
             locked={isLocked}
