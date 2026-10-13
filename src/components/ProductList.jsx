@@ -1,23 +1,16 @@
-// ProductList: shows the items a cashier can tap to add to the cart.
-// For now it uses fake placeholder products (no real data yet).
-
-// Placeholder products so the grid has something to show
-const products = [
-  { id: 1, name: 'Product Name', category: 'Snacks' },
-  { id: 2, name: 'Product Name', category: 'Drinks' },
-  { id: 3, name: 'Product Name', category: 'School Supplies' },
-  { id: 4, name: 'Product Name', category: 'Snacks' },
-  { id: 5, name: 'Product Name', category: 'Drinks' },
-  { id: 6, name: 'Product Name', category: 'Personal Care' },
-  { id: 7, name: 'Product Name', category: 'Snacks' },
-  { id: 8, name: 'Product Name', category: 'School Supplies' },
-  { id: 9, name: 'Product Name', category: 'Drinks' },
-]
+// ProductList: shows the items a cashier can add to the cart.
+// It receives the list of products from App.jsx through props.
 
 // Category filter buttons (they don't filter anything yet)
-const categories = ['All', 'Snacks', 'Drinks', 'School Supplies', 'Personal Care']
+const categories = ['All', 'Snacks', 'Drinks', 'School Supplies']
 
-function ProductList() {
+// Turns a number like 18 into the text "₱18.00"
+function formatPrice(price) {
+  return '₱' + price.toFixed(2)
+}
+
+// { products } pulls the "products" prop out of the props object that App sends
+function ProductList({ products }) {
   return (
     <section className="rounded-xl bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-800">Products</h2>
@@ -43,20 +36,29 @@ function ProductList() {
         ))}
       </div>
 
-      {/* Product cards in a 3-column grid */}
-      <div className="mt-5 grid grid-cols-3 gap-4">
+      {/* Responsive grid: 1 column on small screens, 2 on medium, 3 on large */}
+      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* .map() makes one card for each product in the array */}
         {products.map((product) => (
-          <button
+          <div
             key={product.id}
-            type="button"
-            className="rounded-lg border border-slate-200 p-4 text-left hover:border-emerald-500 hover:shadow-sm"
+            className="flex flex-col justify-between rounded-lg border border-slate-200 p-4"
           >
-            {/* Grey box stands in for a product photo */}
-            <div className="mb-3 h-24 rounded-md bg-slate-100" />
-            <p className="font-medium text-slate-800">{product.name}</p>
-            <p className="text-xs text-slate-500">{product.category}</p>
-            <p className="mt-2 font-semibold text-emerald-700">₱0.00</p>
-          </button>
+            <div>
+              <p className="font-medium text-slate-800">{product.name}</p>
+              <p className="mt-1 text-lg font-semibold text-emerald-700">
+                {formatPrice(product.price)}
+              </p>
+            </div>
+
+            {/* Add to Cart button (doesn't do anything yet) */}
+            <button
+              type="button"
+              className="mt-4 w-full rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            >
+              Add to Cart
+            </button>
+          </div>
         ))}
       </div>
     </section>
