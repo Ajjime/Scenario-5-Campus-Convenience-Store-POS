@@ -1,24 +1,51 @@
-// PaymentConfirmation: the "success" message shown after a payment goes through.
-// Later we will only show this after payment; for now it is always visible.
+// PaymentConfirmation: the "success" panel shown right after a payment goes through.
+// It reads the saved sale from App and has the New Transaction button.
 
-function PaymentConfirmation() {
+import { formatPrice } from '../utils/formatPrice'
+
+function PaymentConfirmation({ sale, onNewTransaction }) {
   return (
-    <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-center">
-      {/* Check mark circle */}
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white">
-        ✓
+    <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+      <div className="text-center">
+        {/* Check mark circle */}
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white">
+          ✓
+        </div>
+        <h2 className="mt-3 text-lg font-semibold text-emerald-800">Payment Successful</h2>
       </div>
 
-      <h2 className="mt-3 text-lg font-semibold text-emerald-800">Payment Successful</h2>
-      <p className="mt-1 text-sm text-emerald-700">Transaction #000000 · ₱0.00 paid by Cash</p>
+      {/* Sale details: label on the left, value on the right */}
+      <dl className="mx-auto mt-4 max-w-sm space-y-1 text-sm text-emerald-900">
+        <div className="flex justify-between">
+          <dt>Transaction No.</dt>
+          <dd className="font-mono">{sale.transactionNumber}</dd>
+        </div>
+        <div className="flex justify-between">
+          <dt>Date & Time</dt>
+          <dd>{sale.dateTime}</dd>
+        </div>
+        <div className="flex justify-between">
+          <dt>Total Amount</dt>
+          <dd>{formatPrice(sale.total)}</dd>
+        </div>
+        <div className="flex justify-between">
+          <dt>Amount Paid</dt>
+          <dd>{formatPrice(sale.amountPaid)}</dd>
+        </div>
+        <div className="flex justify-between border-t border-emerald-200 pt-2 text-base font-bold">
+          <dt>Change</dt>
+          <dd>{formatPrice(sale.change)}</dd>
+        </div>
+      </dl>
 
-      {/* Next-step buttons */}
-      <div className="mt-4 flex justify-center gap-3">
-        <button type="button" className="rounded-lg border border-emerald-600 px-4 py-2 text-sm text-emerald-700">
-          Print Receipt
-        </button>
-        <button type="button" className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white">
-          New Order
+      {/* Resets everything for the next customer (handled in App) */}
+      <div className="mt-5 text-center">
+        <button
+          type="button"
+          onClick={onNewTransaction}
+          className="rounded-lg bg-emerald-600 px-6 py-2 font-semibold text-white hover:bg-emerald-700"
+        >
+          New Transaction
         </button>
       </div>
     </section>

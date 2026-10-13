@@ -1,4 +1,4 @@
-// App: the main screen. It owns the cart state and places each component on the page.
+// App: the main screen. It owns the cart and sale state and places each component on the page.
 // Child components get data and functions from here through props.
 
 import { useRef, useState } from 'react'
@@ -8,6 +8,7 @@ import OrderSummary from './components/OrderSummary'
 import PaymentForm from './components/PaymentForm'
 import PaymentConfirmation from './components/PaymentConfirmation'
 import Receipt from './components/Receipt'
+import { createTransactionNumber, formatDateTime } from './utils/transaction'
 
 // Hard-coded store items. Prices are plain numbers (in pesos) so we can do math with them.
 // "category" isn't shown on the cards yet; we'll use it for the category buttons later.
@@ -24,10 +25,20 @@ function App() {
   // The cart is a list of items like { id, name, price, quantity }. It starts empty.
   const [cart, setCart] = useState([])
 
+  // The finished sale, or null while the cashier is still ringing items up.
+  // When it is not null, the cart and payment are locked and the receipt is shown.
+  const [completedSale, setCompletedSale] = useState(null)
+
+  // Changing this number gives PaymentForm a fresh start (empty input, no errors). See startNewTransaction.
+  const [paymentFormKey, setPaymentFormKey] = useState(0)
+
   // Short success message shown after adding an item ('' means nothing to show)
   const [message, setMessage] = useState('')
   // Remembers the hide-message timer so a new message can cancel the old timer
   const messageTimer = useRef(null)
+
+  // True after payment: used to lock the cart and the payment form
+  const isLocked = completedSale !== null
 
   // Shows a message, then hides it after 2 seconds
   function showMessage(text) {
@@ -84,6 +95,27 @@ function App() {
   // Subtotal for one item = price × quantity. Total = all subtotals added together.
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
+  // Called by PaymentForm after the amount passes every check.
+  // Saves a snapshot of the sale so the confirmation and receipt never change afterwards.
+  function completePayment(amountPaid, change) {
+    const now = new Date()
+    setCompletedSale({
+      transactionNumber: createTransactionNumber(now),
+      dateTime: formatDateTime(now),
+      items: cart,
+      total: total,
+      amountPaid: amountPaid,
+      change: change,
+    })
+  }
+
+  // New Transaction button: reset everything for the next customer
+  function startNewTransaction() {
+    setCart([]) // empty cart
+    setCompletedSale(null) // hides confirmation and receipt, unlocks everything
+    setPaymentFormKey(paymentFormKey + 1) // new key = brand-new PaymentForm with empty input and no errors
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
       {/* Top bar with the store name */}
@@ -101,32 +133,39 @@ function App() {
         )}
       </div>
 
-      <main className="mx-auto max-w-7xl space-y-6 p-8">
-        {/* Row 1: 12-column grid. Products take 7 columns, checkout takes 5 */}
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-7">
-            {/* Pass the products and the add function down as props */}
+      {/* 12-column grid. The left side takes 7 columns, checkout takes 5 */}
+      <main className="mx-auto grid max-w-7xl grid-cols-12 gap-6 p-8">
+        {/* Left side: products while selling; after payment, the confirmation then the receipt */}
+        <div className="col-span-7">
+          {isLocked ? (
+            <div className="space-y-6">
+              <PaymentConfirmation sale={completedSale} onNewTransaction={startNewTransaction} />
+              <Receipt sale={completedSale} />
+            </div>
+          ) : (
             <ProductList products={products} onAddToCart={addToCart} />
-          </div>
-
-          {/* Checkout column: cart, totals, then payment, stacked top to bottom */}
-          <div className="col-span-5 space-y-6">
-            <Cart
-              cart={cart}
-              onIncrease={increaseQuantity}
-              onDecrease={decreaseQuantity}
-              onRemove={removeFromCart}
-              onClear={clearCart}
-            />
-            <OrderSummary cart={cart} total={total} />
-            <PaymentForm />
-          </div>
+          )}
         </div>
 
-        {/* Row 2: what the cashier sees after paying (always shown for now) */}
-        <div className="grid grid-cols-2 gap-6">
-          <PaymentConfirmation />
-          <Receipt />
+        {/* Checkout column: cart, totals, then payment, stacked top to bottom */}
+        <div className="col-span-5 space-y-6">
+          <Cart
+            cart={cart}
+            locked={isLocked}
+            onIncrease={increaseQuantity}
+            onDecrease={decreaseQuantity}
+            onRemove={removeFromCart}
+            onClear={clearCart}
+          />
+          <OrderSummary cart={cart} total={total} />
+          {/* PaymentForm needs the total and whether the cart is empty to check the amount */}
+          <PaymentForm
+            key={paymentFormKey}
+            total={total}
+            cartIsEmpty={cart.length === 0}
+            locked={isLocked}
+            onPaymentSuccess={completePayment}
+          />
         </div>
       </main>
     </div>
