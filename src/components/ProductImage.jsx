@@ -5,7 +5,7 @@
 import { useState } from 'react'
 
 // Props:
-//   src        - path to the photo, e.g. "/images/ballpen.jpg"
+//   src        - URL of the photo, e.g. assetUrl('images/ballpen.jpg')
 //   emoji      - backup picture, e.g. "🖊️"
 //   alt        - description for screen readers ("" = decorative, the name is already shown next to it)
 //   className  - size/shape classes from the parent (e.g. "h-12 w-12 rounded-lg")

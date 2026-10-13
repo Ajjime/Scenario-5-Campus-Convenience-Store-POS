@@ -4,6 +4,8 @@
 
 CampusMart is a point-of-sale (POS) web app for a campus convenience store. A cashier adds products to a cart, takes a cash payment, and gets a digital receipt. It runs in a desktop browser.
 
+**Live Demo:** https://ajjime.github.io/Scenario-5-Campus-Convenience-Store-POS/
+
 ## Features
 
 - Product grid with photos, names, and prices in ₱

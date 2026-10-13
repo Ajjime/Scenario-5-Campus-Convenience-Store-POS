@@ -3,6 +3,7 @@
 
 import { formatPrice } from '../utils/formatPrice'
 import ProductImage from './ProductImage'
+import { assetUrl } from '../utils/assetUrl'
 
 function Receipt({ sale }) {
   return (
@@ -13,7 +14,7 @@ function Receipt({ sale }) {
       <section className="receipt-paper px-6 pb-10 pt-6 font-mono text-sm text-slate-800">
         {/* Store header: logo, name, transaction number and date/time */}
         <div className="text-center">
-          <img src="/logo.svg" alt="CampusMart logo" width="48" height="48" className="mx-auto h-12 w-12" />
+          <img src={assetUrl('logo.svg')} alt="CampusMart logo" width="48" height="48" className="mx-auto h-12 w-12" />
           <h2 className="mt-2 font-sans text-lg font-extrabold tracking-tight">
             Campus<span className="text-brand-700">Mart</span>
           </h2>

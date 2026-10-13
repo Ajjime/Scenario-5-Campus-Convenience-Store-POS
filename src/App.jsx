@@ -9,17 +9,19 @@ import PaymentForm from './components/PaymentForm'
 import PaymentConfirmation from './components/PaymentConfirmation'
 import Receipt from './components/Receipt'
 import { createTransactionNumber, formatDateTime } from './utils/transaction'
+import { assetUrl } from './utils/assetUrl'
 
 // Hard-coded store items. Prices are plain numbers (in pesos) so we can do math with them.
 // "category" isn't shown on the cards yet; we'll use it for the category buttons later.
-// "image" is a photo in public/images/; "emoji" is shown instead if the photo fails to load.
+// "image" is a photo in public/images/ (assetUrl adds the GitHub Pages folder in front);
+// "emoji" is shown instead if the photo fails to load.
 const products = [
-  { id: 1, name: 'Instant Noodles', price: 18, category: 'Snacks', image: '/images/instant-noodles.jpg', emoji: '🍜' },
-  { id: 2, name: 'Potato Chips', price: 25, category: 'Snacks', image: '/images/potato-chips.jpg', emoji: '🥔' },
-  { id: 3, name: 'Soft Drink (Can)', price: 25, category: 'Drinks', image: '/images/soft-drink.jpg', emoji: '🥤' },
-  { id: 4, name: 'Bottled Water', price: 20, category: 'Drinks', image: '/images/bottled-water.jpg', emoji: '💧' },
-  { id: 5, name: 'Ballpen (piece)', price: 12, category: 'School Supplies', image: '/images/ballpen.jpg', emoji: '🖊️' },
-  { id: 6, name: 'Notebook (piece)', price: 35, category: 'School Supplies', image: '/images/notebook.jpg', emoji: '📓' },
+  { id: 1, name: 'Instant Noodles', price: 18, category: 'Snacks', image: assetUrl('images/instant-noodles.jpg'), emoji: '🍜' },
+  { id: 2, name: 'Potato Chips', price: 25, category: 'Snacks', image: assetUrl('images/potato-chips.jpg'), emoji: '🥔' },
+  { id: 3, name: 'Soft Drink (Can)', price: 25, category: 'Drinks', image: assetUrl('images/soft-drink.jpg'), emoji: '🥤' },
+  { id: 4, name: 'Bottled Water', price: 20, category: 'Drinks', image: assetUrl('images/bottled-water.jpg'), emoji: '💧' },
+  { id: 5, name: 'Ballpen (piece)', price: 12, category: 'School Supplies', image: assetUrl('images/ballpen.jpg'), emoji: '🖊️' },
+  { id: 6, name: 'Notebook (piece)', price: 35, category: 'School Supplies', image: assetUrl('images/notebook.jpg'), emoji: '📓' },
 ]
 
 function App() {
@@ -127,7 +129,7 @@ function App() {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             {/* alt="" because the store name is written right next to the logo */}
-            <img src="/logo.svg" alt="" width="44" height="44" className="h-11 w-11 drop-shadow" />
+            <img src={assetUrl('logo.svg')} alt="" width="44" height="44" className="h-11 w-11 drop-shadow" />
             <div>
               <h1 className="text-xl font-extrabold tracking-tight">
                 Campus<span className="text-amber-300">Mart</span>

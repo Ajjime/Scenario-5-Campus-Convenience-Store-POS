@@ -1,0 +1,60 @@
+# Builds the Vite app and publishes it to GitHub Pages.
+# Live site: https://ajjime.github.io/Scenario-5-Campus-Convenience-Store-POS/
+name: Deploy to GitHub Pages
+
+# When to run: on every push to main, or by clicking "Run workflow" on the Actions tab
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# What the workflow is allowed to do
+permissions:
+  contents: read # read the repository code
+  pages: write # publish to GitHub Pages
+  id-token: write # prove to GitHub Pages that this workflow is allowed to deploy
+
+# Only one deployment at a time; a newer push waits instead of cancelling one in progress
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # Job 1: turn the source code into the static website in dist/
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js (LTS)
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm # reuse downloaded packages between runs
+
+      - name: Install dependencies
+        run: npm ci # exact versions from package-lock.json
+
+      - name: Build the site
+        run: npm run build # creates the dist/ folder
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload dist/ as the Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  # Job 2: publish the uploaded website (runs only after build succeeds)
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # shows the live link on the Actions run
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
