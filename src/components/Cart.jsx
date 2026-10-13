@@ -2,55 +2,122 @@
 // It gets the cart and the functions to change it from App.jsx through props.
 // After payment, "locked" is true and the cart can't be changed.
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { formatPrice } from '../utils/formatPrice'
 import ProductImage from './ProductImage'
 
 // How long the fade-out animation lasts (must match --animate-fade-out in index.css)
 const FADE_OUT_MS = 180
 
+// One row in the cart: photo, name and unit price, quantity buttons, subtotal, remove.
+// A "ghost" row is a copy of an item that was just removed: it only plays the fade-out.
+// "inert" makes the ghost unclickable and hidden from screen readers.
+function CartRow({ item, ghost, locked, onDecrease, onIncrease, onRemove }) {
+  return (
+    <li
+      inert={ghost}
+      className={'flex items-center gap-3 py-3 ' + (ghost ? 'animate-fade-out' : 'animate-slide-in')}
+    >
+      {/* alt="" because the item name is written right next to the thumbnail */}
+      <ProductImage src={item.image} emoji={item.emoji} alt="" className="h-12 w-12 shrink-0 rounded-lg" />
+
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold leading-snug text-slate-800">{item.name}</p>
+        <p className="text-xs tabular-nums text-slate-500">{formatPrice(item.price)} each</p>
+      </div>
+
+      {/* Quantity controls. − at quantity 1 removes the item (handled in App). */}
+      <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-0.5">
+        <button
+          type="button"
+          onClick={() => onDecrease(item)}
+          aria-label={'Decrease ' + item.name}
+          disabled={locked}
+          className="h-8 w-8 rounded-full text-lg leading-none text-slate-700 transition hover:bg-white hover:shadow-sm active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          −
+        </button>
+        {/* min-w (not a fixed width) so 3+ digit quantities still fit */}
+        <span className="min-w-6 px-1 text-center font-semibold tabular-nums">{item.quantity}</span>
+        <button
+          type="button"
+          onClick={() => onIncrease(item.id)}
+          aria-label={'Increase ' + item.name}
+          disabled={locked}
+          className="h-8 w-8 rounded-full text-lg leading-none text-slate-700 transition hover:bg-white hover:shadow-sm active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          +
+        </button>
+      </div>
+
+      {/* Subtotal = unit price × quantity, with a Remove link underneath.
+          whitespace-nowrap keeps big amounts on one line. */}
+      <div className="min-w-20 text-right">
+        <p className="whitespace-nowrap font-bold tabular-nums text-slate-900">
+          {formatPrice(item.price * item.quantity)}
+        </p>
+        {/* Remove is hidden once the cart is locked */}
+        {!locked && (
+          <button
+            type="button"
+            onClick={() => onRemove(item)}
+            aria-label={'Remove ' + item.name}
+            className="text-xs font-medium text-red-600 hover:underline active:scale-95"
+          >
+            Remove
+          </button>
+        )}
+      </div>
+    </li>
+  )
+}
+
 function Cart({ cart, locked, onIncrease, onDecrease, onRemove, onClear }) {
   // ---- Fade-out animation (UI only: App's cart logic is unchanged) ----
-  // When a row is removed we first let it fade out, THEN ask App to remove it.
+  // App removes the item right away, so the cart, totals, and payment are always correct.
+  // Cart keeps a short-lived "ghost" copy of the removed row just to show it fading out.
 
-  // ids of the rows that are fading out right now
-  const [leavingIds, setLeavingIds] = useState([])
+  // Ghost rows currently fading out: { id, item, index }
+  const [ghosts, setGhosts] = useState([])
+  // Gives every ghost its own id (used as the React key)
+  const nextGhostId = useRef(0)
 
-  // The removal happens a moment later, and by then App may have re-rendered with a newer cart.
-  // This ref always holds the newest App functions, so the delayed call uses the current cart.
-  const latest = useRef({ onDecrease, onRemove, onClear })
-  useEffect(() => {
-    latest.current = { onDecrease, onRemove, onClear }
-  })
-
-  // Mark rows as leaving (starts the fade), then run the real action after the fade ends
-  function fadeOutThen(ids, action) {
-    setLeavingIds((current) => [...current, ...ids])
+  // Run the real App action now, then show ghosts of the removed items for FADE_OUT_MS
+  function removeWithFade(items, action) {
+    const newGhosts = items.map((item) => ({
+      id: nextGhostId.current++,
+      item: item,
+      index: cart.indexOf(item), // remember where the row was, so the ghost fades in the same spot
+    }))
+    action()
+    setGhosts((current) => [...current, ...newGhosts])
     setTimeout(() => {
-      action()
-      setLeavingIds((current) => current.filter((id) => !ids.includes(id)))
+      setGhosts((current) => current.filter((ghost) => !newGhosts.includes(ghost)))
     }, FADE_OUT_MS)
   }
 
-  function handleRemove(id) {
-    fadeOutThen([id], () => latest.current.onRemove(id))
+  function handleRemove(item) {
+    removeWithFade([item], () => onRemove(item.id))
   }
 
-  // − at quantity 1 removes the item in App, so fade it out first. Otherwise just lower it.
+  // − at quantity 1 removes the item in App, so show a fade. Otherwise just lower it.
   function handleDecrease(item) {
     if (item.quantity === 1) {
-      fadeOutThen([item.id], () => latest.current.onDecrease(item.id))
+      removeWithFade([item], () => onDecrease(item.id))
     } else {
       onDecrease(item.id)
     }
   }
 
   function handleClear() {
-    fadeOutThen(
-      cart.map((item) => item.id),
-      () => latest.current.onClear(),
-    )
+    removeWithFade(cart, onClear)
   }
+
+  // The list we draw: the real cart items, with any ghosts slotted back where they were
+  const rows = cart.map((item) => ({ key: 'item-' + item.id, item: item, ghost: false }))
+  ghosts.forEach((ghost) => {
+    rows.splice(Math.min(ghost.index, rows.length), 0, { key: 'ghost-' + ghost.id, item: ghost.item, ghost: true })
+  })
 
   return (
     <section className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-sm sm:p-6">
@@ -67,8 +134,8 @@ function Cart({ cart, locked, onIncrease, onDecrease, onRemove, onClear }) {
         </p>
       )}
 
-      {/* Friendly empty state instead of an empty list */}
-      {cart.length === 0 ? (
+      {/* Friendly empty state (shown once any fading rows are gone) */}
+      {rows.length === 0 ? (
         <div className="mt-4 flex flex-col items-center rounded-xl border-2 border-dashed border-slate-200 px-4 py-8 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-600">
             <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -81,76 +148,21 @@ function Cart({ cart, locked, onIncrease, onDecrease, onRemove, onClear }) {
         </div>
       ) : (
         <>
-          {/* One row per item: photo, name and unit price, quantity buttons, subtotal, remove */}
           <ul className="mt-3 divide-y divide-slate-100">
-            {cart.map((item) => {
-              const leaving = leavingIds.includes(item.id)
-              return (
-                // New rows slide in once when they first appear; leaving rows fade out
-                <li
-                  key={item.id}
-                  className={
-                    'flex items-center gap-3 py-3 ' +
-                    (leaving ? 'pointer-events-none animate-fade-out' : 'animate-slide-in')
-                  }
-                >
-                  {/* alt="" because the item name is written right next to the thumbnail */}
-                  <ProductImage
-                    src={item.image}
-                    emoji={item.emoji}
-                    alt=""
-                    className="h-12 w-12 shrink-0 rounded-lg"
-                  />
-
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold leading-snug text-slate-800">{item.name}</p>
-                    <p className="text-xs tabular-nums text-slate-500">{formatPrice(item.price)} each</p>
-                  </div>
-
-                  {/* Quantity controls. − at quantity 1 removes the item (handled in App). */}
-                  <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-0.5">
-                    <button
-                      type="button"
-                      onClick={() => handleDecrease(item)}
-                      aria-label={'Decrease ' + item.name}
-                      disabled={locked}
-                      className="h-8 w-8 rounded-full text-lg leading-none text-slate-700 transition hover:bg-white hover:shadow-sm active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      −
-                    </button>
-                    <span className="w-6 text-center font-semibold tabular-nums">{item.quantity}</span>
-                    <button
-                      type="button"
-                      onClick={() => onIncrease(item.id)}
-                      aria-label={'Increase ' + item.name}
-                      disabled={locked}
-                      className="h-8 w-8 rounded-full text-lg leading-none text-slate-700 transition hover:bg-white hover:shadow-sm active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {/* Subtotal = unit price × quantity, with a Remove link underneath */}
-                  <div className="w-20 text-right">
-                    <p className="font-bold tabular-nums text-slate-900">{formatPrice(item.price * item.quantity)}</p>
-                    {/* Remove is hidden once the cart is locked */}
-                    {!locked && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(item.id)}
-                        aria-label={'Remove ' + item.name}
-                        className="text-xs font-medium text-red-600 hover:underline active:scale-95"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                </li>
-              )
-            })}
+            {rows.map((row) => (
+              <CartRow
+                key={row.key}
+                item={row.item}
+                ghost={row.ghost}
+                locked={locked}
+                onDecrease={handleDecrease}
+                onIncrease={onIncrease}
+                onRemove={handleRemove}
+              />
+            ))}
           </ul>
 
-          {!locked && (
+          {!locked && cart.length > 0 && (
             <button
               type="button"
               onClick={handleClear}

@@ -7,6 +7,10 @@ import { formatPrice } from './formatPrice.js'
 
 const INVALID_AMOUNT = 'Please enter a valid payment amount.'
 
+// Largest cash amount accepted. Far above any real sale here, and it keeps the
+// centavo math exact (JavaScript loses precision on very large numbers).
+const MAX_PAYMENT = 1000000
+
 function validatePayment(amountText, total, cartIsEmpty) {
   // Check 1: there must be something to pay for
   if (cartIsEmpty) {
@@ -29,8 +33,14 @@ function validatePayment(amountText, total, cartIsEmpty) {
 
   const amount = Number(text)
 
-  // Check 4: negative
-  if (amount < 0) {
+  // Check 4: negative. We look at the minus sign itself, because Number("-0") is 0
+  // and "amount < 0" would let "-0" through.
+  if (text.startsWith('-')) {
+    return { error: INVALID_AMOUNT }
+  }
+
+  // Check 5: unrealistically large (would also break the centavo math)
+  if (amount > MAX_PAYMENT) {
     return { error: INVALID_AMOUNT }
   }
 
@@ -39,7 +49,7 @@ function validatePayment(amountText, total, cartIsEmpty) {
   const paidCentavos = Math.round(amount * 100)
   const totalCentavos = Math.round(total * 100)
 
-  // Check 5: enough money
+  // Check 6: enough money
   if (paidCentavos < totalCentavos) {
     return { error: 'Insufficient payment. Please enter at least ' + formatPrice(total) + '.' }
   }
