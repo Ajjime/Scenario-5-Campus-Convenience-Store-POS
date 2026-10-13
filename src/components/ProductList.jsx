@@ -1,16 +1,13 @@
 // ProductList: shows the items a cashier can add to the cart.
-// It receives the list of products from App.jsx through props.
+// It receives the products and the add function from App.jsx through props.
+
+import { formatPrice } from '../utils/formatPrice'
 
 // Category filter buttons (they don't filter anything yet)
 const categories = ['All', 'Snacks', 'Drinks', 'School Supplies']
 
-// Turns a number like 18 into the text "₱18.00"
-function formatPrice(price) {
-  return '₱' + price.toFixed(2)
-}
-
-// { products } pulls the "products" prop out of the props object that App sends
-function ProductList({ products }) {
+// { products, onAddToCart } pulls those two props out of the props object that App sends
+function ProductList({ products, onAddToCart }) {
   return (
     <section className="rounded-xl bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-800">Products</h2>
@@ -51,9 +48,11 @@ function ProductList({ products }) {
               </p>
             </div>
 
-            {/* Add to Cart button (doesn't do anything yet) */}
+            {/* Clicking calls App's addToCart with this product */}
             <button
               type="button"
+              onClick={() => onAddToCart(product)}
+              aria-label={'Add ' + product.name + ' to cart'}
               className="mt-4 w-full rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
             >
               Add to Cart
