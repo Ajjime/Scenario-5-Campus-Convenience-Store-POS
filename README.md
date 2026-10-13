@@ -1,22 +1,66 @@
-# Scenario-5-Campus-Convenience-Store-POS
+# CampusMart POS
 
-A point-of-sale (POS) screen layout for a campus convenience store, built with React (Vite) and Tailwind CSS. This version is layout only: placeholder text, no logic yet.
+**Scenario 5: Campus Convenience Store POS**
 
-## Components
+CampusMart is a point-of-sale (POS) web app for a campus convenience store. A cashier adds products to a cart, takes a cash payment, and gets a digital receipt. It runs in a desktop browser.
 
-All components live in `src/components` and are placed on the page by `src/App.jsx`:
+## Features
 
-- **ProductList** – search, category buttons, and a grid of products
-- **Cart** – items being bought, with quantity buttons
-- **OrderSummary** – subtotal, discount, tax, and total
-- **PaymentForm** – payment method, amount received, and change
-- **PaymentConfirmation** – success message after payment
-- **Receipt** – paper-style receipt of the sale
+- Product grid with photos, names, and prices in ₱
+- Add to cart; increase or decrease quantities; remove items
+- Subtotals and total update automatically
+- Order summary listing every item in the cart
+- Cash payment with validation:
+  - Blank, non-numeric, or negative amounts: "Please enter a valid payment amount."
+  - Too little cash: "Insufficient payment. Please enter at least ₱X."
+- Change calculation (Change = Amount Paid − Total)
+- Payment confirmation with a transaction number, date, and time
+- Digital receipt with items, quantities, unit prices, subtotals, total, amount paid, and change
+- Cart and payment lock after payment; **New Transaction** starts over
 
-## Run it
+## Products
+
+| Product          | Price  |
+| ---------------- | ------ |
+| Instant Noodles  | ₱18.00 |
+| Potato Chips     | ₱25.00 |
+| Soft Drink (Can) | ₱25.00 |
+| Bottled Water    | ₱20.00 |
+| Ballpen (piece)  | ₱12.00 |
+| Notebook (piece) | ₱35.00 |
+
+## Tech Stack
+
+- [React](https://react.dev/)
+- [Vite](https://vite.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+
+## How to Run
+
+You need [Node.js](https://nodejs.org/) installed.
 
 ```bash
 npm install
-npm run dev      # start the dev server at http://localhost:5173
-npm run build    # make a production build in dist/
+npm run dev
 ```
+
+Then open the address shown in the terminal (usually http://localhost:5173).
+
+## Credits
+
+### Product photos
+
+<!-- TODO: fill in where each photo came from and who took it -->
+
+| Product          | File                                 | Source | Photographer |
+| ---------------- | ------------------------------------ | ------ | ------------ |
+| Instant Noodles  | `public/images/instant-noodles.jpg`  | TODO   | TODO         |
+| Potato Chips     | `public/images/potato-chips.jpg`     | TODO   | TODO         |
+| Soft Drink (Can) | `public/images/soft-drink.jpg`       | TODO   | TODO         |
+| Bottled Water    | `public/images/bottled-water.jpg`    | TODO   | TODO         |
+| Ballpen (piece)  | `public/images/ballpen.jpg`          | TODO   | TODO         |
+| Notebook (piece) | `public/images/notebook.jpg`         | TODO   | TODO         |
+
+### Logo
+
+The CampusMart logo (`public/logo.svg`) is an original design made for this project.
